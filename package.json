@@ -1,0 +1,38 @@
+{
+  "name": "turumba",
+  "version": "0.1.0",
+  "description": "Turumba — a Jinfessa family tool. A secondhand-marketplace deal newsletter: searches Facebook Marketplace through the secondhand MCP, filters out the noise, values every listing with a deterministic (no-AI) analysis engine, and mails a clean branded digest to subscribers.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "turumba": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "serve": "node src/index.js serve",
+    "run:digest": "node src/index.js run",
+    "demo": "node scripts/demo.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "secondhand",
+    "marketplace",
+    "newsletter",
+    "facebook-marketplace",
+    "deals",
+    "mcp",
+    "bikes",
+    "turumba"
+  ],
+  "author": "Jinfessa",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.14",
+    "node-cron": "^3.0.3",
+    "secondhand-mcp": "^0.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

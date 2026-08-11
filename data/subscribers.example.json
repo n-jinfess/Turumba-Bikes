@@ -1,0 +1,15 @@
+[
+  {
+    "id": "example-0001",
+    "email": "you@example.com",
+    "name": "Natai",
+    "location": "McLean, VA",
+    "maxPrice": 400,
+    "heightIn": 71,
+    "queries": ["road bike", "cannondale", "specialized allez"],
+    "frequency": "weekly",
+    "unsubToken": "example-unsub-token",
+    "active": true,
+    "createdAt": "2026-08-11T00:00:00.000Z"
+  }
+]
