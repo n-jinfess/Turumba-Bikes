@@ -36,17 +36,27 @@ export function digestFromAnalysis(candidatesPath, analysisPath) {
   let ai = {};
   try { ai = JSON.parse(readFileSync(resolve(analysisPath), 'utf8')); } catch { /* AI file optional */ }
 
-  const picks = cand.candidates.map((c) => {
+  const scored = cand.candidates.map((c) => {
     const hasAi = Boolean(ai[c.id]);
     const analysis = normalize(hasAi ? ai[c.id] : c.deterministic, hasAi ? 'ai' : 'deterministic');
-    return { listing: { id: c.id, title: c.title, price: c.price, location: c.location }, analysis };
+    // The AI may identify what a vague listing actually is ("Bicycles" → the
+    // real model); let that override the display title.
+    const title = (hasAi && ai[c.id].name) ? ai[c.id].name : c.title;
+    return { listing: { id: c.id, title, price: c.price, location: c.location }, analysis };
   });
-  picks.sort((x, y) => (TONE_SCORE[y.analysis.tone] || 0) - (TONE_SCORE[x.analysis.tone] || 0));
 
-  const skipped = (cand.skipped || []).map((s) => ({
-    listing: { id: s.id, title: s.title, price: s.price, location: s.location },
-    analysis: { verdict: s.verdict, tone: 'bad' },
-  }));
+  // "bad" verdicts (wrong size, kids' bikes, condition risk) belong in the
+  // skipped block, not the picks — same as the deterministic digest.
+  const picks = scored.filter((x) => x.analysis.tone !== 'bad')
+    .sort((x, y) => (TONE_SCORE[y.analysis.tone] || 0) - (TONE_SCORE[x.analysis.tone] || 0));
+
+  const skipped = [
+    ...scored.filter((x) => x.analysis.tone === 'bad'),
+    ...(cand.skipped || []).map((s) => ({
+      listing: { id: s.id, title: s.title, price: s.price, location: s.location },
+      analysis: { verdict: s.verdict, tone: 'bad' },
+    })),
+  ];
 
   return {
     subscriber: cand.subscriber,

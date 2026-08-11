@@ -36,6 +36,7 @@ Improve on the deterministic baseline where reading changed the answer; keep it 
 ```json
 {
   "1234567890": {
+    "name": "Cannondale CAAD5 R1000",
     "verdict": "Good deal",
     "tone": "good",
     "marketLow": 300,
@@ -51,6 +52,7 @@ Improve on the deterministic baseline where reading changed the answer; keep it 
   }
 }
 ```
+- `name` (optional) overrides the display title — use it when you identify what a vaguely-titled listing ("Bicycles") actually is.
 - `tone` must be one of `good | warn | bad | muted` (drives the badge color).
 - `verdict` is a short label; suggested set: `Good deal`, `Fair — at market`, `Worth a look — verify condition`, `High — negotiate`, `Overpriced`, `Skip — condition risk`, `Wrong size`, `Ask price`.
 

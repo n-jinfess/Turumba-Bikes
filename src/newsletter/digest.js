@@ -27,12 +27,15 @@ export async function buildDigest(sub, opts = {}) {
   const search = opts.search || searchMarketplace;
   const inArea = opts.area ? locationGate(opts.area) : undefined;
 
+  // Facebook's location resolver wants a bare city ("McLean"), not "McLean, VA".
+  const searchLocation = (sub.location || '').split(',')[0].trim() || sub.location;
+
   const seen = new Set();
   const raw = [];
   for (const query of sub.queries) {
     let text = '';
     try {
-      text = await search({ query, location: sub.location, maxPrice: sub.maxPrice, limit: 25 });
+      text = await search({ query, location: searchLocation, maxPrice: sub.maxPrice, limit: 25 });
     } catch (e) {
       // A single failed query shouldn't sink the whole digest.
       continue;
