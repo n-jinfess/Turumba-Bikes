@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { analyzeListing } from '../src/analysis/valuation.js';
 import { classifyBrand, classifyType } from '../src/analysis/brands.js';
-import { parseListings, filterRealistic } from '../src/mcp/filter.js';
+import { parseListings, filterRealistic, parseDetails } from '../src/mcp/filter.js';
 import { targetFrame } from '../src/analysis/fit.js';
 
 test('classifies brand tiers correctly', () => {
@@ -50,6 +50,23 @@ test('target frame for 5\'11" is L / 57–59cm', () => {
   const f = targetFrame(71);
   assert.equal(f.letter, 'M/L');
   assert.match(f.cm, /55–57/);
+});
+
+test('parseDetails extracts description and photo urls for the AI pass', () => {
+  const text = [
+    '📋 Listing Details',
+    '🔗 https://www.facebook.com/marketplace/item/4682073285357997',
+    '**Description:** Univega Arrow 200$, Schwinn Traveler 180$.',
+    '📍 Chantilly, VA',
+    '🖼️ Photos (2):',
+    '   https://cdn.example.com/a.jpg',
+    '   https://cdn.example.com/b.jpg',
+  ].join('\n');
+  const d = parseDetails(text);
+  assert.match(d.description, /Univega Arrow 200\$/);
+  assert.equal(d.photos.length, 2);
+  assert.equal(d.photos[0], 'https://cdn.example.com/a.jpg');
+  assert.equal(d.location, 'Chantilly, VA');
 });
 
 test('realistic filter drops accessories and stolen posts', () => {

@@ -13,6 +13,24 @@
 const RE_LISTING =
   /\*\*\$([0-9.,]+)\*\*\s*-\s*(.+?)\n(?:\s*📍\s*(.+?)\n)?\s*🆔\s*(\d+)/g;
 
+/**
+ * Parse the MCP's get_listing_details text into structured fields, so an AI
+ * analysis pass (or a human) has the description and photos to work from.
+ * @returns {{url:string, description:string, photos:string[], location:string}}
+ */
+export function parseDetails(text) {
+  const url = (text.match(/🔗\s*(\S+)/) || [])[1] || '';
+  const location = ((text.match(/\n\s*📍\s*(.+)/) || [])[1] || '').trim();
+  const descM = text.match(/\*\*Description:\*\*\s*([\s\S]*?)(?:\n\s*(?:📍|🚚|🖼️)|$)/);
+  const description = (descM ? descM[1] : '').trim();
+  const photoSection = text.split(/🖼️[^\n]*\n/)[1] || '';
+  const photos = [];
+  const re = /(https?:\/\/\S+)/g;
+  let m;
+  while ((m = re.exec(photoSection)) !== null) photos.push(m[1]);
+  return { url, description, photos, location };
+}
+
 /** Parse MCP search text into structured listings. @returns {Listing[]} */
 export function parseListings(text) {
   const out = [];

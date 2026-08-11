@@ -38,9 +38,9 @@ export function renderDigest(digest, { unsubUrl = '#' } = {}) {
 }
 
 function topSubject(top) {
-  const a = top.analysis;
   const price = top.listing.price > 5 ? ` at ${money(top.listing.price)}` : '';
-  return `${a.brand || a.type}${price} — ${a.verdict}`;
+  const name = top.listing.title.length > 30 ? top.listing.title.slice(0, 28) + '…' : top.listing.title;
+  return `${name}${price} — ${top.analysis.verdict}`;
 }
 
 // ── HTML sections ─────────────────────────────────────────────────────────────
@@ -77,7 +77,8 @@ function topPickCard(item, sub) {
         <div style="font-size:13px;color:${c.muted};margin:6px 0 2px;">📍 ${esc(l.location || 'nearby')}</div>
         ${dealCheck}
         ${badge}
-        <p style="margin:12px 0;font-size:14px;line-height:1.6;color:${c.text};">${esc(verdictGloss(a))}</p>
+        <p style="margin:12px 0;font-size:14px;line-height:1.6;color:${c.text};">${esc(a.blurb || verdictGloss(a))}</p>
+        ${a.confidence ? `<div style="font-size:11px;color:${c.muted};margin:-6px 0 8px;">Analysis confidence: ${esc(a.confidence)}${a.source === 'ai' ? ' · read description &amp; photos' : ' · from listing title'}</div>` : ''}
         <div style="font-size:12px;color:${c.muted};margin-bottom:12px;">Why:<ul style="margin:6px 0 0;padding-left:18px;color:${c.text};font-size:13px;">${reasons}</ul></div>
         <a href="${fbUrl(l.id)}" style="display:inline-block;background:${c.ink};color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:8px;">View on Marketplace →</a>
         <div style="margin-top:14px;background:${c.paper};border-left:3px solid ${c.gold};border-radius:0 6px 6px 0;padding:12px 14px;">
@@ -182,7 +183,7 @@ export function renderText(d, unsubUrl) {
     const price = l.price > 5 ? money(l.price) : 'Ask price';
     L.push(`${i === 0 ? '★ TOP PICK — ' : ''}${shortTitle(l.title)} — ${price}`);
     L.push(`  ${l.location || 'nearby'} · market ${range([a.marketLow, a.marketHigh])} · retail new ~${money(a.retailNew[0])}`);
-    L.push(`  Verdict: ${a.verdict} — ${verdictGloss(a)}`);
+    L.push(`  Verdict: ${a.verdict} — ${a.blurb || verdictGloss(a)}`);
     L.push(`  ${fbUrl(l.id)}`, '');
   });
   if (d.skipped.length) {

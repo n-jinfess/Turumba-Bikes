@@ -18,9 +18,11 @@ It's built on top of the [`secondhand-mcp`](https://www.npmjs.com/package/second
 2. **A deterministic deal-analysis engine** — a real valuation with a verdict and plain-English reasons. **No AI, no guessing.** Same listing always yields the same, explainable answer.
 3. **A newsletter platform** — subscribers, preferences, a branded email in a human editorial voice, one-click unsubscribe, and a cron scheduler.
 
-## Why "no AI"?
+## Deterministic by default, AI on demand
 
-Every verdict comes from rules you can read in [`src/analysis/`](src/analysis/): a brand-tier knowledge base, market-value tables, condition parsing, and fit sizing. That means the analysis is **auditable, free to run, offline, and never hallucinates a price**. If you disagree with a verdict, you can find the exact line that produced it and change it.
+The **shipped app has no AI in it** — no API key, no model calls. Every default verdict comes from rules you can read in [`src/analysis/`](src/analysis/): a brand-tier knowledge base, market-value tables, condition parsing, and fit sizing. That makes the analysis **auditable, free, offline, and incapable of hallucinating a price**. If you disagree with a verdict, you can find the exact line that produced it.
+
+Rules are excellent at *triage* — "real bike or junk, does it fit, is the ask sane" — which is 80% of a newsletter's job. But they read a listing's title, not its photos, and they don't know a CAAD9's groupset from its paint. For the last mile, there's an **optional AI pass run through a [Claude Code](https://claude.com/claude-code) skill** ([`turumba-analyze`](.claude/skills/turumba-analyze/SKILL.md)): a human triggers it, Claude reads the shortlisted descriptions and photos and judges each one, and the app renders the digest from that analysis. The **deployed service stays AI-free**; intelligence is added on demand, by a person, only on the handful of listings worth a close read. See [AI analysis](#ai-analysis-optional).
 
 ## What a digest looks like
 
@@ -73,6 +75,25 @@ subscriber preferences
 ```
 
 Delivery is **dry-run by default**: with no `SMTP_*` set, digests render to `./out` instead of sending, so you can build and review the whole pipeline with zero secrets.
+
+## AI analysis (optional)
+
+The deterministic digest is the default. When you want a smarter read, run the two-step AI flow — the app does the plumbing, a Claude Code skill does the judging:
+
+```bash
+# 1. App: triage + fetch full details (description + photos) for the shortlist
+node src/index.js candidates --email you@email.com        # → out/candidates.json
+
+# 2. Skill: Claude reads each listing's description + photos, judges it truthfully,
+#    and writes out/analysis.json. In Claude Code, run:  /turumba-analyze
+
+# 3. App: render the branded digest from the AI analysis
+node src/index.js render                                   # → out/digest.html
+```
+
+The skill ([`.claude/skills/turumba-analyze/SKILL.md`](.claude/skills/turumba-analyze/SKILL.md)) instructs Claude to read descriptions, **download and view photos** to assess real condition, identify model/year/groupset, extract prices buried in a bundle listing, and produce an honest verdict with a confidence flag — improving on the deterministic baseline only where reading actually changes the answer. The email marks whether each verdict came from the title (deterministic) or from reading the description and photos (AI).
+
+This keeps the boundary clean: **the app you deploy never calls a model**; the AI enrichment is a human-in-the-loop step. The JSON contract between the two is documented in the skill.
 
 ## Configuration (`.env`)
 
